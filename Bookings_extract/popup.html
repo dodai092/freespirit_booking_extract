@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body { 
+        width: 260px; 
+        padding: 20px;
+        border-radius: 20px; 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+        background-color: #ffffff; 
+        color: #000000;
+        text-align: left;
+      }
+
+      /* LOGO STYLING */
+      .logo-container {
+        margin-bottom: 5px; /* Spacing below logo */
+      }
+      
+      .logo-container img {
+        display: block;
+        max-width: 160px; /* Adjust this to make it bigger/smaller */
+        height: auto;
+      }
+
+      p.subtitle {
+        font-size: 11px;
+        color: #666;
+        margin-top: 5px;
+        margin-bottom: 25px;
+        line-height: 1.4;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Divider Line */
+      .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 20px 0;
+      }
+      .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      /* Buttons */
+      button { 
+        width: 100%; 
+        padding: 14px 0; 
+        margin-bottom: 12px; 
+        background-color: #000000; 
+        color: #ffffff; 
+        border: none; 
+        border-radius: 4px;
+        font-size: 9px; 
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer; 
+        transition: opacity 0.3s;
+      }
+
+      button:hover { 
+        opacity: 0.8; 
+      }
+
+      /* Status */
+      #status { 
+        margin-top: 15px; 
+        font-size: 10px; 
+        color: #000; 
+        text-transform: uppercase; 
+        letter-spacing: 1px;
+        min-height: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <div class="logo-container">
+      <img src="logo.png" alt="Free Spirit Logo" style="width: 100px;">
+    </div>
+
+    <p class="subtitle">Booking Extraction</p>
+
+    <button id="btnFreetour">Freetour Bookings</button>
+    <button id="btnGuru">Guruwalk Bookings</button>
+
+    <div class="divider"></div>
+
+    <div id="status">Ready</div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
