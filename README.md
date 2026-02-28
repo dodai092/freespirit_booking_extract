@@ -29,7 +29,8 @@ Date · Time · Tour type · City · Language · Platform · Pax · Capacity
 ```
 manifest.json   Extension config and permissions
 popup.html      Popup UI
-popup.js        Scraping logic and clipboard handling
+freetour.js     freetour scraping logic and clipboard handling
+guruwalk.js     guruwalk scraping logic and clipboard handling
 logo.png        Extension icon
 ```
 
