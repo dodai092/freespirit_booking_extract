@@ -2,97 +2,277 @@
 <html>
   <head>
     <style>
-      body { 
-        width: 260px; 
-        padding: 20px;
-        border-radius: 20px; 
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-        background-color: #ffffff; 
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        width: 260px;
+        padding: 18px 16px 16px;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background-color: #ffffff;
         color: #000000;
         text-align: left;
       }
 
-      /* LOGO STYLING */
+      /* LOGO */
       .logo-container {
-        margin-bottom: 5px; /* Spacing below logo */
+        margin-bottom: 4px;
       }
-      
+
       .logo-container img {
         display: block;
-        max-width: 160px; /* Adjust this to make it bigger/smaller */
+        max-width: 160px;
         height: auto;
       }
 
       p.subtitle {
-        font-size: 11px;
-        color: #666;
-        margin-top: 5px;
-        margin-bottom: 25px;
-        line-height: 1.4;
+        font-size: 9px;
+        color: #999;
+        margin-top: 4px;
+        margin-bottom: 20px;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
       }
 
-      /* Divider Line */
-      .divider {
-        display: flex;
-        align-items: center;
-        text-align: center;
-        margin: 20px 0;
-      }
-      .divider::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid #e0e0e0;
+      /* SECTION */
+      .section {
+        margin-bottom: 6px;
       }
 
-      /* Buttons */
-      button { 
-        width: 100%; 
-        padding: 14px 0; 
-        margin-bottom: 12px; 
-        background-color: #000000; 
-        color: #ffffff; 
-        border: none; 
-        border-radius: 4px;
-        font-size: 9px; 
+      .section-label {
+        font-size: 8.5px;
+        font-weight: 700;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        color: #aaa;
+        margin-bottom: 8px;
+      }
+
+      /* Month picker */
+      .month-input {
+        width: 100%;
+        padding: 9px 10px;
+        margin-bottom: 6px;
+        border: 1px solid #e0e0e0;
+        border-radius: 3px;
+        font-size: 9px;
         font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #000;
+        background-color: #fafafa;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: border-color 0.15s;
+      }
+
+      .month-input:focus {
+        outline: none;
+        border-color: #000;
+        background-color: #fff;
+      }
+
+      /* Row: delay + button */
+      .action-row {
+        display: flex;
+        gap: 6px;
+        align-items: stretch;
+        margin-bottom: 4px;
+      }
+
+      .delay-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex-shrink: 0;
+      }
+
+      .delay-label {
+        font-size: 7px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #bbb;
+        text-align: center;
+      }
+
+      .delay-input {
+        width: 38px;
+        padding: 0 6px;
+        height: 100%;
+        border: 1px solid #e0e0e0;
+        border-radius: 3px;
+        font-size: 11px;
+        font-weight: 600;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #000;
+        background-color: #fafafa;
+        text-align: center;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: textfield;
+        transition: border-color 0.15s;
+        min-height: 34px;
+      }
+
+      .delay-input::-webkit-inner-spin-button,
+      .delay-input::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+      }
+
+      .delay-input:focus {
+        outline: none;
+        border-color: #000;
+        background-color: #fff;
+      }
+
+      /* Primary buttons */
+      .btn-primary {
+        flex: 1;
+        padding: 0 10px;
+        min-height: 34px;
+        background-color: #000;
+        color: #fff;
+        border: none;
+        border-radius: 3px;
+        font-size: 8.5px;
+        font-weight: 700;
         letter-spacing: 1.5px;
         text-transform: uppercase;
-        cursor: pointer; 
-        transition: opacity 0.3s;
+        cursor: pointer;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        transition: opacity 0.2s;
       }
 
-      button:hover { 
-        opacity: 0.8; 
+      .btn-primary:hover {
+        opacity: 0.75;
+      }
+
+      /* Cancel button */
+      #btnCancel {
+        width: 100%;
+        padding: 9px 0;
+        margin-top: 8px;
+        background-color: #fff;
+        color: #000;
+        border: 1px solid #000;
+        border-radius: 3px;
+        font-size: 8.5px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        display: none;
+        transition: background-color 0.2s, color 0.2s;
+      }
+
+      #btnCancel:hover {
+        background-color: #000;
+        color: #fff;
+      }
+
+      /* Divider */
+      .divider {
+        border: none;
+        border-top: 1px solid #ebebeb;
+        margin: 14px 0;
+      }
+
+      /* Secondary (outlined) buttons for single day */
+      .btn-secondary {
+        width: 100%;
+        padding: 10px 0;
+        margin-bottom: 6px;
+        background-color: #fff;
+        color: #000;
+        border: 1px solid #d0d0d0;
+        border-radius: 3px;
+        font-size: 8.5px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+      }
+
+      .btn-secondary:hover {
+        background-color: #000;
+        color: #fff;
+        border-color: #000;
+      }
+
+      .btn-secondary:last-of-type {
+        margin-bottom: 0;
       }
 
       /* Status */
-      #status { 
-        margin-top: 15px; 
-        font-size: 10px; 
-        color: #000; 
-        text-transform: uppercase; 
-        letter-spacing: 1px;
-        min-height: 15px;
+      #status {
+        margin-top: 14px;
+        font-size: 8.5px;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        min-height: 14px;
       }
     </style>
   </head>
   <body>
-    
+
     <div class="logo-container">
       <img src="logo.png" alt="Free Spirit Logo" style="width: 100px;">
     </div>
 
     <p class="subtitle">Booking Extraction</p>
 
-    <button id="btnFreetour">Freetour Bookings</button>
-    <button id="btnGuru">Guruwalk Bookings</button>
+    <!-- FULL MONTH — FREETOUR -->
+    <div class="section">
+      <div class="section-label">Full Month Freetour</div>
+      <input type="month" id="monthPickerFreetour" class="month-input" />
+      <div class="action-row">
+        <div class="delay-wrap">
+          <span class="delay-label">Delay s</span>
+          <input type="number" id="delaySecondsFreetour" class="delay-input" value="3" min="1" max="30" />
+        </div>
+        <button id="btnFreetourMonth" class="btn-primary">Freetour Month</button>
+      </div>
+      <button id="btnCancel">Cancel Batch</button>
+    </div>
 
-    <div class="divider"></div>
+    <hr class="divider">
+
+    <!-- FULL MONTH — GURUWALK -->
+    <div class="section">
+      <div class="section-label">Full Month Guruwalk</div>
+      <input type="month" id="monthPickerGuru" class="month-input" />
+      <div class="action-row">
+        <div class="delay-wrap">
+          <span class="delay-label">Delay s</span>
+          <input type="number" id="delaySecondsGuru" class="delay-input" value="3" min="1" max="30" />
+        </div>
+        <button id="btnGuruMonth" class="btn-primary">Guruwalk Month</button>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- SINGLE DAY -->
+    <div class="section">
+      <div class="section-label">Single Day</div>
+      <button id="btnFreetour" class="btn-secondary">Freetour Bookings</button>
+      <button id="btnGuru" class="btn-secondary">Guruwalk Bookings</button>
+    </div>
 
     <div id="status">Ready</div>
 
-    <script src="popup.js"></script>
+    <script src="freetour.js"></script>
+    <script src="guruwalk.js"></script>
   </body>
 </html>
