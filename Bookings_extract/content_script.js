@@ -1,15 +1,15 @@
 // ==========================================
 // FREETOUR BATCH SCRAPER - CONTENT SCRIPT
-// Runs on every page load on freetour.com.
+// Runs on every page load on admin.freetour.com.
 // Checks chrome.storage.local for an active
 // batch session and advances the date loop.
 // ==========================================
 
 (function () {
-  // Only activate on the bookings page
-  if (!document.querySelector('form.booking-calendar')) return;
+  // Only activate on the bookings page (URL contains /bookings)
+  if (!location.pathname.includes('/bookings')) return;
 
-  // Give the page 1.5s to finish rendering (POST responses can be slow)
+  // Give the page 1.5s to finish rendering
   setTimeout(runBatchStep, 1500);
 
   async function runBatchStep() {
@@ -19,9 +19,12 @@
     // No active batch — do nothing
     if (!batch || !batch.active) return;
 
+    // Read the current date from the URL query param (?date=YYYY-MM-DD)
+    const params = new URLSearchParams(location.search);
+    const currentDateVal = params.get('date') || '';
+
     // Build the date string we expect to be on right now
     const expectedDate = buildDateStr(batch.year, batch.month, batch.currentDay);
-    const currentDateVal = document.querySelector('#dater')?.value || '';
 
     // If we're on the wrong date (e.g. user navigated mid-batch),
     // just navigate to the correct date and wait for the next load.
@@ -31,7 +34,7 @@
     }
 
     // Scrape current page — returns an array of TSV row strings
-    const newRows = scrapeFreetourRows();
+    const newRows = scrapeFreetourRows(currentDateVal);
     const updatedRows = [...batch.rows, ...newRows];
 
     if (batch.currentDay < batch.totalDays) {
@@ -80,17 +83,14 @@
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   }
 
+  // Navigate by updating the URL query param — works on admin.freetour.com
   function navigateToDate(dateStr) {
-    const input = document.querySelector('#dater');
-    const form = document.querySelector('form.booking-calendar');
-    if (!input || !form) return;
-    input.removeAttribute('readonly');
-    input.value = dateStr;
-    form.submit();
+    const url = new URL(location.href);
+    url.searchParams.set('date', dateStr);
+    location.href = url.toString();
   }
 
-  function scrapeFreetourRows() {
-    const rawDate = document.querySelector('#dater')?.value || '';
+  function scrapeFreetourRows(rawDate) {
     if (!rawDate) return [];
 
     const dateObj = new Date(rawDate + 'T00:00:00');

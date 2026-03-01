@@ -15,7 +15,7 @@ async function runScript(scriptFunction) {
 
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    function: scriptFunction,
+    func: scriptFunction,
   }, (results) => {
     if (chrome.runtime.lastError) {
       setStatus("Error: " + chrome.runtime.lastError.message, "red");
@@ -51,68 +51,78 @@ document.getElementById("btnFreetourMonth").addEventListener("click", startFreet
 document.getElementById("btnCancel").addEventListener("click", cancelBatch);
 
 // On popup open, check if a Freetour batch is already running and update the UI
-chrome.storage.local.get('freetourBatch', (data) => {
-  const batch = data.freetourBatch;
-  if (batch && batch.active) {
-    const monthLabel = `${batch.year}-${String(batch.month).padStart(2, '0')}`;
-    setStatus(`Running: Day ${batch.currentDay} of ${batch.totalDays} (${monthLabel})`, '#555');
-    document.getElementById("btnCancel").style.display = "inline-block";
-  }
-});
+if (chrome.storage) {
+  chrome.storage.local.get('freetourBatch', (data) => {
+    const batch = data.freetourBatch;
+    if (batch && batch.active) {
+      const monthLabel = `${batch.year}-${String(batch.month).padStart(2, '0')}`;
+      setStatus(`Running: Day ${batch.currentDay} of ${batch.totalDays} (${monthLabel})`, '#555');
+      document.getElementById("btnCancel").style.display = "inline-block";
+    }
+  });
+} else {
+  setStatus('Reload the extension in chrome://extensions', 'red');
+}
 
 // ==========================================
 // FREETOUR BATCH - START
 // ==========================================
 
 async function startFreetourBatch() {
-  const monthInput = document.getElementById("monthPickerFreetour");
-  if (!monthInput.value) {
-    setStatus("Please select a month first.", "orange");
-    return;
-  }
-
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const [year, month] = monthInput.value.split('-').map(Number);
-
-  // Days in month: new Date(year, month, 0) uses the 1-indexed month
-  // as "day 0 of the next 0-indexed month" — correctly handles all months
-  const totalDays = new Date(year, month, 0).getDate();
-  const delaySeconds = parseInt(document.getElementById("delaySecondsFreetour").value) || 3;
-
-  await chrome.storage.local.set({
-    freetourBatch: {
-      active: true,
-      year,
-      month,       // 1-indexed (1 = January … 12 = December)
-      totalDays,
-      currentDay: 1,
-      delaySeconds,
-      rows: []
-    }
-  });
-
-  const day1Str = `${year}-${String(month).padStart(2, '0')}-01`;
-
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: (dateStr) => {
-      const input = document.querySelector('#dater');
-      const form = document.querySelector('form.booking-calendar');
-      if (!input || !form) return;
-      input.removeAttribute('readonly');
-      input.value = dateStr;
-      form.submit();
-    },
-    args: [day1Str]
-  }, (results) => {
-    if (chrome.runtime.lastError) {
-      setStatus("Error: " + chrome.runtime.lastError.message, "red");
+  try {
+    if (!chrome.storage) {
+      setStatus('Reload the extension in chrome://extensions', 'red');
       return;
     }
-    const monthLabel = `${year}-${String(month).padStart(2, '0')}`;
-    setStatus(`Running: ${monthLabel} (${totalDays} days)`, '#555');
-    document.getElementById("btnCancel").style.display = "inline-block";
-  });
+    const monthInput = document.getElementById("monthPickerFreetour");
+    if (!monthInput.value) {
+      setStatus("Please select a month first.", "orange");
+      return;
+    }
+
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [year, month] = monthInput.value.split('-').map(Number);
+
+    // Days in month: new Date(year, month, 0) uses the 1-indexed month
+    // as "day 0 of the next 0-indexed month" — correctly handles all months
+    const totalDays = new Date(year, month, 0).getDate();
+    const delaySeconds = parseInt(document.getElementById("delaySecondsFreetour").value) || 3;
+
+    await chrome.storage.local.set({
+      freetourBatch: {
+        active: true,
+        year,
+        month,       // 1-indexed (1 = January … 12 = December)
+        totalDays,
+        currentDay: 1,
+        delaySeconds,
+        rows: []
+      }
+    });
+
+    const day1Str = `${year}-${String(month).padStart(2, '0')}-01`;
+
+    // Navigate to day 1 by updating the URL query param — works on admin.freetour.com
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (dateStr) => {
+        const url = new URL(location.href);
+        url.searchParams.set('date', dateStr);
+        location.href = url.toString();
+      },
+      args: [day1Str]
+    }, (results) => {
+      if (chrome.runtime.lastError) {
+        setStatus("Error: " + chrome.runtime.lastError.message, "red");
+        return;
+      }
+      const monthLabel = `${year}-${String(month).padStart(2, '0')}`;
+      setStatus(`Running: ${monthLabel} (${totalDays} days)`, '#555');
+      document.getElementById("btnCancel").style.display = "inline-block";
+    });
+  } catch (err) {
+    setStatus("Error: " + err.message, "red");
+  }
 }
 
 // ==========================================
@@ -127,8 +137,6 @@ function scrapeFreetourLogic() {
   const formattedDate = dateObj.toLocaleDateString('en-GB', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
   });
-
-  const isFirstOfMonth = dateObj.getDate() === 1;
 
   const flagToLang = {
     'gb': 'eng', 'us': 'eng', 'es': 'esp', 'fr': 'fra',
@@ -177,7 +185,6 @@ function scrapeFreetourLogic() {
   const headers = ['Date', 'Time', 'Tour', 'City', 'Language', 'Platform', 'Pax', 'Capacity'];
   const dataRows = results.map(r => headers.map(h => r[h]).join('\t'));
 
-  return isFirstOfMonth
-    ? [headers.join('\t'), ...dataRows].join('\n')
-    : dataRows.join('\n');
+  // Always include headers so a single-day clipboard paste is self-contained
+  return [headers.join('\t'), ...dataRows].join('\n');
 }
